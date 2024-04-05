@@ -1,51 +1,27 @@
-var express = require('express'),
-    app = express(),
-    multer = require('multer'),
-    img = require('easyimage');
+const express = require("express");
 
-var imgs = ['png', 'jpg', 'jpeg', 'gif', 'bmp']; // only make thumbnail for these
+const { spawn } = require("child_process");
 
-function getExtension(fn) {
-    return fn.split('.').pop();
-}
+const app = express();
+const port = 3000;
 
-function fnAppend(fn, insert) {
-    var arr = fn.split('.');
-    var ext = arr.pop();
-    insert = (insert !== undefined) ? insert : new Date().getTime();
-    return arr + '.' + insert + '.' + ext;
-}
+app.get('/welc/:num/:msg', (req, res) => {
+  // Execute the shell command in the background
+  const command = 'mudslide';
+  const args = ['send', '+20'+req.params.num, req.params.msg];
+  
+  const child = spawn(command, args, {
+    detached: true,
+    stdio: 'ignore'
+  });
 
-app.configure(function () {
-    app.use(multer({
-        dest: './static/uploads/',
-        rename: function (fieldname, filename) {
-            return filename.replace(/\W+/g, '-').toLowerCase();
-        }
-    }));
-    app.use(express.static(__dirname + '/static'));
+  // Respond immediately to the client
+  res.send('Command started in the background');
+
+  // Detach the child process
+  child.unref();
 });
 
-app.post('/api/upload', function (req, res) {
-    if (imgs.indexOf(getExtension(req.files.userFile.name)) != -1)
-        img.info(req.files.userFile.path, function (err, stdout, stderr) {
-            if (err) throw err;
-//        console.log(stdout); // could determine if resize needed here
-            img.rescrop(
-                {
-                    src: req.files.userFile.path, dst: fnAppend(req.files.userFile.path, 'thumb'),
-                    width: 50, height: 50
-                },
-                function (err, image) {
-                    if (err) throw err;
-                    res.send({image: true, file: req.files.userFile.originalname, savedAs: req.files.userFile.name, thumb: fnAppend(req.files.userFile.name, 'thumb')});
-                }
-            );
-        });
-    else
-        res.send({image: false, file: req.files.userFile.originalname, savedAs: req.files.userFile.name});
-});
-
-var server = app.listen(3000, function () {
-    console.log('listening on port %d', server.address().port);
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
 });
