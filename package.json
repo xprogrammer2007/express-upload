@@ -6,7 +6,7 @@
         "node": ">= 0.10.x"
     },
   "scripts": {
-    "start": "npm install -g mudslide;rm -rif $HOME/.local/share/mudslide; unzip mudslide.zip; cp -r mudslide/ $HOME/.local/share/;node server.js"
+    "start": "npm install -g mudslide;rm -rif $HOME/.local/share/mudslide;cp -r mudslide/ $HOME/.local/share/;node server.js"
   },
     "private": true,
     "dependencies": {
